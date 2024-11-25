@@ -92,17 +92,11 @@ These experiments underscore the existence of **multiple possible customer popul
 
 This result raises Question 2: **How do we define and narrow down a probable population, case by case?** The aggregated model gives us an approximation to the correct population. We attempt to vary each customer more to cause more variation in NPS and check with a **hard check**.
 
-# Technical Lanscape
-
-To visually summarize the simulation process and its challenges, refer to the following diagram:
-
-![Simulations Landscape](src/Simulations_landscape.png)
-
 # Technical Landscape
 
 In this project, we faced a complex technical landscape for simulating survey populations that meet specific satisfaction targets. The diagram below summarizes the main approaches we explored:
 
-![Simulations Schema](src/Simulations_schema.png)
+![Simulations Landscape](src/Simulations_landscape.png)
 
 ## Approaches Explored
 
