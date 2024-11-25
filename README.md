@@ -98,6 +98,12 @@ To visually summarize the simulation process and its challenges, refer to the fo
 
 ![Simulations Landscape](src/Simulations_landscape.png)
 
+# Technical Landscape
+
+In this project, we faced a complex technical landscape for simulating survey populations that meet specific satisfaction targets. The diagram below summarizes the main approaches we explored:
+
+![Simulations Schema](src/Simulations_schema.png)
+
 ## Approaches Explored
 
 ### 1. Survey Repositories
@@ -108,20 +114,76 @@ We categorized the sources of survey data into two main types:
 
 - **Historical Data**: Leveraging existing survey datasets as a realistic baseline to ensure the simulated populations reflect real-world distributions.  
 
+---
+
 ### 2. Convergence Algorithms
-Two distinct paths were explored to guide the generation of simulated populations toward meeting the satisfaction targets:  
-- **Client Characterization**:  
-  - **Client Model (NPS + SHAPs)**: A detailed characterization of individual clients based on NPS predictions and the contribution of each touchpoint using SHAP values.  
-  - **K-means Clustering**: Grouping clients into clusters to simplify adjustments and focus simulation efforts on representative groups.  
+The algorithms for simulating populations that meet satisfaction targets are based on **two key pillars**:
+1. **Client Characterization**: Understanding and segmenting clients into meaningful groups based on their behavior.  
+2. **Optimization Algorithms**: Adjusting satisfaction scores or reshaping the population to meet specific targets.
 
-- **Optimization Methods**:  
-  - **Survey-Level Algorithms**: Iteratively adjusted individual clients to align with satisfaction targets while maintaining realistic profiles.  
-    - **Soft Simulations**: Incrementally adjusted one touchpoint per client, maintaining high realism but limited variability in population-level NPS.  
-    - **Hard Simulations**: Simultaneously adjusted multiple touchpoints per client, increasing population-level NPS variability but reducing individual realism.  
-  - **Population-Level Algorithms**: Generated entirely new populations in each iteration to explore a broader solution space.  
-    - **Naive Approaches**: Techniques like downsampling with predefined criteria.  
-    - **Complex Algorithms**: Advanced methods like genetic algorithms, Bayesian optimization, and Monte Carlo techniques for fine-tuning populations. 
+#### 2.1. Client Characterization
+Characterization is crucial for ensuring that simulated populations remain realistic. We explored two complementary approaches:
 
+- **Client Model (NPS + SHAPs)**:  
+  - This approach models each individual client by predicting their NPS and explaining the contribution of each touchpoint to that score using **SHAP (SHapley Additive exPlanations)** values.  
+  - The predicted NPS provides a quantitative understanding of customer sentiment, while SHAP values offer a detailed breakdown of how each touchpoint influences the overall score.  
 
+- **K-means Clustering**:  
+  - Using the **elbow method**, we identified that segmenting clients into **k = 3** clusters provided well-defined groups, which align with our hypothesis of biases in the survey data:  
+    1. **Loyalty Bias**: Captures clients whose behavior is consistent with promoters, generalizing their loyalty across multiple touchpoints.  
+    2. **Incidence Bias**: Represents clients whose dissatisfaction stems from issues across multiple touchpoints, aligning with detractors.  
+    3. **Objective Clients**: Represents neutral clients, without strong biases toward loyalty or incidences.  
+  - While K-means itself is agnostic to these biases, our **causal interpretation** of the clusters allows us to operationalize them in subsequent optimization steps.  
 
+These two characterization methods (NPS + SHAPs and K-means) complement each other:
+- The **Client Model** provides individual-level insights into NPS and touchpoint contributions.
+- **K-means Clustering** groups clients into interpretable segments based on multidimensional patterns, enabling targeted adjustments at a group level. It could be trained using the Client Model characterization.
 
+#### 2.2. Optimization Algorithms
+Optimization algorithms modify satisfaction levels or reshape populations to converge toward the specified targets. These can operate at different levels:
+
+- **Survey-Level Algorithms**: Operate on individual clients within the population:  
+  - **Soft Simulations**: Adjust one touchpoint score (e.g., increase a `7` to `8` or decrease an `8` to `7`) per client. This naive approach preserves individual realism but introduces minimal variability at the population level.  
+  - **Hard Simulations**: Simultaneously adjust multiple touchpoints for each client. While this increases variability at the population level, it risks reducing individual realism.  
+  - **Causal Swapping**:  
+    - **Core Idea**: This algorithm asumes historical biases and adjusts satisfaction levels by "swapping" clients between groups to generate a population that meets targets while preserving those biases.  
+    - **Implementation Without K-means**: Causal swapping could operate directly on NPS labels (promoter or detractor), but this approach might fail to generalize loyalty and incidence biases across multiple touchpoints.  
+    - **Implementation with K-means**: Using the clusters from K-means enhances causal swapping by leveraging a multidimensional understanding of biases, ensuring more realistic and consistent adjustments.
+
+- **Population-Level Algorithms**: Modify or generate entirely new populations in each iteration:  
+  - **Naive Approaches**: Downsampling or other simplistic methods to filter data based on predefined criteria.  
+  - **Complex Algorithms**:  
+    - **Genetic Algorithms**: Simulate evolution by iteratively improving populations.  
+    - **Bayesian Optimization**: Efficiently searches for optimal population configurations.  
+    - **Monte Carlo Simulations**: Use random sampling to model and refine populations.  
+
+---
+
+### 3. Combined Approach: Client Model, K-means, and Causal Swapping
+The combination of client characterization (via NPS + SHAPs and K-means) and causal swapping provides a structured simulation process:
+
+1. **Client Model for Individual Insights**:  
+   - The NPS + SHAP-based client model offers granular information about how each touchpoint influences individual satisfaction, ensuring adjustments align with customer behavior.  
+
+2. **K-means for Validation and Segmentation**:  
+   - K-means clustering confirms the existence of three well-defined client groups, which align with our hypothesized biases.  
+   - This segmentation generalizes the concepts of promoters and detractors into a multidimensional space of touchpoints, improving the realism and plausibility of adjustments.  
+
+3. **Causal Swapping for Population Adjustment**:  
+   - Clients are swapped between clusters (e.g., from incidence-biased to loyalty-biased or vice-versa) to adjust satisfaction levels while respecting historical biases.  
+   - This process ensures that the population meets satisfaction targets without compromising realism or consistency.  
+
+4. **Improved Realism**:  
+   - Combining causal swapping with these characterization methods results in more realistic and plausible populations compared to using simpler approaches.
+
+---
+
+### 4. Challenges
+- Ensuring the **realism of individual clients** while achieving the satisfaction targets.
+- Validating the **causal interpretation** of clusters to confirm alignment with loyalty and incidence biases.
+- Balancing the trade-offs between **soft**, **hard**, and **causal swapping** simulations.
+- Scaling optimization techniques to larger datasets while maintaining computational efficiency.
+
+---
+
+This landscape highlights how the combination of client characterization (e.g., NPS + SHAPs, K-means) and optimization algorithms (e.g., causal swapping) enables us to balance realism, target alignment, and computational feasibility in simulating survey populations.
