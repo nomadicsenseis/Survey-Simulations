@@ -4,6 +4,12 @@ This project focuses on the robust generation of a survey population that meets 
 
 The main goal is to simulate a population of surveys that accurately reflects these satisfaction levels while maintaining consistency and realism in the data.
 
+## Summary Diagram
+
+To visually summarize the simulation process and its challenges, refer to the following diagram:
+
+![Simulations Schema](./src/Simulations_basics.png)
+
 # Can We Simulate the Population of Customers That Meets Specific Targets?
 
 ### Key Questions:
@@ -85,6 +91,12 @@ These experiments underscore the existence of **multiple possible customer popul
 
 
 This result raises Question 2: **How do we define and narrow down a probable population, case by case?** The aggregated model gives us an approximation to the correct population. We attempt to vary each customer more to cause more variation in NPS and check with a **hard check**.
+
+# Technical Lanscape
+
+To visually summarize the simulation process and its challenges, refer to the following diagram:
+
+![Simulations Landscape](./src/Simulations_landscape.png)
 
 
 
