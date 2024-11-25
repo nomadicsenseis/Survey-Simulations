@@ -98,6 +98,30 @@ To visually summarize the simulation process and its challenges, refer to the fo
 
 ![Simulations Landscape](src/Simulations_landscape.png)
 
+## Approaches Explored
+
+### 1. Survey Repositories
+We categorized the sources of survey data into two main types:  
+- **Artificial**:  
+  - **Copulas**: Used to generate synthetic data based on probabilistic dependencies between variables.  
+  - **GANs (Generative Adversarial Networks)**: Applied to create synthetic survey data that closely mimics historical patterns.  
+
+- **Historical Data**: Leveraging existing survey datasets as a realistic baseline to ensure the simulated populations reflect real-world distributions.  
+
+### 2. Convergence Algorithms
+Two distinct paths were explored to guide the generation of simulated populations toward meeting the satisfaction targets:  
+- **Client Characterization**:  
+  - **Client Model (NPS + SHAPs)**: A detailed characterization of individual clients based on NPS predictions and the contribution of each touchpoint using SHAP values.  
+  - **K-means Clustering**: Grouping clients into clusters to simplify adjustments and focus simulation efforts on representative groups.  
+
+- **Optimization Methods**:  
+  - **Survey-Level Algorithms**: Iteratively adjusted individual clients to align with satisfaction targets while maintaining realistic profiles.  
+    - **Soft Simulations**: Incrementally adjusted one touchpoint per client, maintaining high realism but limited variability in population-level NPS.  
+    - **Hard Simulations**: Simultaneously adjusted multiple touchpoints per client, increasing population-level NPS variability but reducing individual realism.  
+  - **Population-Level Algorithms**: Generated entirely new populations in each iteration to explore a broader solution space.  
+    - **Naive Approaches**: Techniques like downsampling with predefined criteria.  
+    - **Complex Algorithms**: Advanced methods like genetic algorithms, Bayesian optimization, and Monte Carlo techniques for fine-tuning populations. 
+
 
 
 
