@@ -54,12 +54,35 @@ This rigorous comparison ensures that the simulated population matches not only 
 
 ## Initial Findings
 
-Our initial experiments reveal a fundamental insight:  
-There are, in fact, **multiple possible customer populations (n)** that can achieve the same targets. This non-uniqueness highlights the need for additional criteria or constraints to guide the simulation process toward the most *probable* or *useful* populations.
+Our initial experiments provided valuable insights into the uniqueness and realism of simulated populations:
 
+### Experiment 1: Soft Simulations
+To test whether there can be more than one population of customers meeting the same targets, we conducted a quick experiment called **soft simulations**.  
+- **Methodology**: We selected a historical period as the target population and used the same period from the previous year as a baseline. Then, we minimally altered each customer’s satisfaction scores to meet the targets. Specifically, we:
+  - Increased some scores of `7` to `8`, or
+  - Decreased some scores of `8` to `7`.  
+  Each customer had at most one score adjusted, either up or down, to change the satisfaction levels.  
 
-1. **Soft simulations**: The original NPS does not change in an initial check when customers are unrealistic but not ...  
-2. **Hard simulations**.
+- **Results**:  
+  The simulated population met the satisfaction targets, but the predicted NPS for the simulated sample differed significantly from the target population’s NPS. Surprisingly, the simulated NPS was much closer to the original (unaltered) population's NPS. This indicated that:
+  1. **The individual customers in the simulated sample, though not real, were realistic** in terms of their profiles and characteristics.  
+  2. The issue lay in the **overall population**, which was no longer realistic, despite the individual customers being plausible.  
+
+This revealed a critical insight: there can be more than one population of realistic customers (e.g., the soft-simulated and original populations) that meet the same satisfaction targets but yield different NPS values.  
+
+### Experiment 2: Hard Simulations
+To further explore the variability of simulated populations, we developed a **hard simulation** algorithm:  
+- **Methodology**: Instead of altering only one score per customer, we simultaneously increased or decreased scores for multiple variables (e.g., several touchpoints). This introduced more substantial changes to customer profiles while still ensuring the satisfaction targets were met.  
+
+- **Results**:  
+  The NPS of the hard-simulated population exhibited greater variability compared to the soft simulations, confirming that:
+  1. **Different simulation methods produce populations with varying NPS values**, even when satisfaction targets are met.  
+  2. The realism of the population as a whole depends not only on individual customer adjustments but also on the relationships between those adjustments across the entire dataset.
+
+---
+
+These experiments underscore the existence of **multiple possible customer populations (n)** that meet the same satisfaction targets. The challenge lies in defining additional constraints or selecting a methodology that prioritizes the most probable or useful population for real-world applications.
+
 
 This result raises Question 2: **How do we define and narrow down a probable population, case by case?** The aggregated model gives us an approximation to the correct population. We attempt to vary each customer more to cause more variation in NPS and check with a **hard check**.
 
