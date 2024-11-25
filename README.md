@@ -172,12 +172,9 @@ The combination of client characterization (via NPS + SHAPs and K-means) and cau
 
 ---
 
-### 4. Challenges
-- Ensuring the **realism of individual clients** while achieving the satisfaction targets.
-- Validating the **causal interpretation** of clusters to confirm alignment with loyalty and incidence biases.
-- Balancing the trade-offs between **soft**, **hard**, and **causal swapping** simulations.
-- Scaling optimization techniques to larger datasets while maintaining computational efficiency.
+# The final algorithm: causal swaping
 
----
+![Causal Swaping Algorithm: pt 1](src/Swap_algorithm.png)
+![Causal Swaping Algorithm: pt 2](src/Focus_normal_swaping.png)
+![Causal Swaping Algorithm: pt3](src/Normal_swaping.png)
 
-This landscape highlights how the combination of client characterization (e.g., NPS + SHAPs, K-means) and optimization algorithms (e.g., causal swapping) enables us to balance realism, target alignment, and computational feasibility in simulating survey populations.
