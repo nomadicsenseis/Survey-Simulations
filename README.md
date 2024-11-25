@@ -8,7 +8,7 @@ The main goal is to simulate a population of surveys that accurately reflects th
 
 To visually summarize the simulation process and its challenges, refer to the following diagram:
 
-![Simulations Schema](./src/Simulations_basics.png)
+![Simulations Schema](src/Simulations_basics.png)
 
 # Can We Simulate the Population of Customers That Meets Specific Targets?
 
@@ -96,7 +96,7 @@ This result raises Question 2: **How do we define and narrow down a probable pop
 
 To visually summarize the simulation process and its challenges, refer to the following diagram:
 
-![Simulations Landscape](./src/Simulations_landscape.png)
+![Simulations Landscape](src/Simulations_landscape.png)
 
 
 
