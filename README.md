@@ -172,6 +172,55 @@ The combination of client characterization (via NPS + SHAPs and K-means) and cau
 
 ---
 
+### 4. Discoveries and Insights from Simulations
+
+Our simulation experiments not only allowed us to generate populations aligned with satisfaction targets but also led to critical insights regarding the interpretation of **explanatory drivers** (i.e., the relationships between touchpoints and NPS). Below are some of the key findings:
+
+#### 4.1. Hypotheses on Bias and Explanatory Drivers
+1. **Potential Bias-Sensitive Drivers**:  
+   - A hypothesis emerging from the clustering results is that certain touchpoints may play different roles depending on customer biases:  
+     - For example, **punctuality** seems to influence both **loyalty bias** (by fostering loyalty) and **incidence bias** (as punctuality issues may exacerbate dissatisfaction).  
+   - Instead of categorically assigning touchpoints to one bias, this observation suggests that touchpoints likely have **dual impacts**, depending on the customer group.  
+
+2. **Cluster-Specific Influence of Touchpoints**:  
+   - The hypothesis is that the relative importance of a touchpoint (as measured by SHAP) may vary between clusters (e.g., loyalty-biased, incidence-biased, and objective clients).  
+   - Simulated populations provide an opportunity to test this hypothesis by observing how adjustments to satisfaction levels affect the SHAP contributions for each cluster.
+
+#### 4.2. Interpretation of SHAP-Based Explanatory Models
+One of the most surprising findings from the simulations is how changes in satisfaction levels impact SHAP-based explanatory drivers, providing deeper insights into the role of biased customer distributions:
+
+1. **Counterintuitive SHAP Contributions**:  
+   - In SHAP waterfall plots, we observed cases where a positive change in satisfaction for a given touchpoint results in a **negative SHAP value** for the NPS target.  
+   - This seemingly counterintuitive result can be explained by the distribution of customer biases in the population:  
+     - For example, an increase in satisfaction might reflect the presence of **loyal customers**, whose baseline NPS is already high. In such cases, the model correctly identifies that the change in satisfaction does not meaningfully improve their NPS.  
+     - Conversely, for incidence-biased customers, the same increase in satisfaction may have a more substantial positive impact on NPS.
+
+2. **Bias-Driven Impact**:  
+   - These observations suggest that SHAP is correctly accounting for the **non-isolated effect of satisfaction changes**, considering the distribution of biased customers (e.g., loyalty-biased vs. incidence-biased) in the data.  
+   - The model’s behavior reinforces the idea that satisfaction levels should not be interpreted in isolation but rather in the context of customer biases and group distributions.
+
+3. **Validation Through Simulations**:  
+   - Simulated populations allow us to test and refine these interpretations by observing how changes in customer distributions (e.g., shifting the proportion of loyalty-biased vs. incidence-biased clients) affect SHAP contributions.  
+   - This provides a robust validation framework for understanding how touchpoints interact with biases in driving NPS.
+
+#### 4.3. Broader Insights
+1. **Bias as a Contextual Lens**:  
+   - The clustering process highlights that touchpoints are not universally "positive" or "negative" contributors to NPS. Instead, their impact depends on the **context provided by customer biases** (e.g., loyalty vs. incidence).  
+   - This emphasizes the need for explanatory driver models to consider group-level distributions rather than focusing solely on individual contributions.
+
+2. **Improved Explanatory Frameworks**:  
+   - Results suggest that explanatory models should integrate **bias-aware segmentations** (e.g., loyalty-biased, incidence-biased, and objective clusters) to provide more nuanced and accurate interpretations of how touchpoints contribute to NPS.
+
+3. **Practical Applications**:  
+   - These insights can inform targeted interventions:  
+     - For **loyalty-biased customers**, emphasizing improvements in touchpoints like punctuality or cabin-crew may yield the greatest returns.  
+     - For **incidence-biased customers**, focusing on resolving negative experiences (e.g., issue resolution or food quality) may be more impactful.  
+
+4. **Policy Testing Through Simulations**:  
+   - Simulations provide a controlled environment to test how changes in touchpoint satisfaction levels and customer distributions affect explanatory drivers. This could enable to anticipate the impact of potential policy changes before implementing them in real-world scenarios.
+
+---
+
 # The final algorithm: causal swaping
 
 ![Causal Swaping Algorithm: pt 1](src/Swap_algorithm.png)
