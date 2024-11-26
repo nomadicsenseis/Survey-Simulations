@@ -186,34 +186,6 @@ def get_names_from_pipeline(preprocessor):
     # Return the list of output column names
     return output_columns
 
-
-def read_data(prefix) -> DataFrame:
-    """This function automatically reads a dataframe processed
-    with all features in S3 and return this dataframe with
-    cid as index
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-    Pandas dataframe containing all features
-    """
-
-    s3_keys = [item.key for item in s3_resource.Bucket(S3_BUCKET).objects.filter(Prefix=prefix) if item.key.endswith(".csv")]
-    preprocess_paths = [f"s3://{S3_BUCKET}/{key}" for key in s3_keys]
-    SAGEMAKER_LOGGER.info(f"preprocess_paths: {preprocess_paths}")
-    df_features = pd.DataFrame()
-    for file in preprocess_paths:
-        df = pd.read_csv(file, error_bad_lines=False)
-        df_features = pd.concat([df_features, df], axis=0)
-    SAGEMAKER_LOGGER.info(f"Data size: {str(len(df_features))}")
-    SAGEMAKER_LOGGER.info(f"Columns: {df_features.columns}")
-    df_features.index = df_features[config['VARIABLES_ETL']['ID']]
-    df_features.index.name = config['VARIABLES_ETL']['ID']
-
-    return df_features
-
 def read_csv_from_s3(bucket_name, object_key):
     # Create a boto3 S3 client
     s3_client = boto3.client('s3')

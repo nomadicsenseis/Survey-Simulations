@@ -5,7 +5,6 @@ VARIABLES_ETL:
     - otp15_takeoff
     - ticket_price
     - load_factor
-    - nps_100
     - pun_100_punctuality 
     - bkg_200_journey_preparation
     - pfl_100_checkin
@@ -99,7 +98,6 @@ VARIABLES_CLUSTERIZE:
     - otp15_takeoff
     - ticket_price
     - load_factor
-    - nps_100
     - pun_100_punctuality 
     - bkg_200_journey_preparation
     - pfl_100_checkin
@@ -139,6 +137,24 @@ VARIABLES_SIMULATE:
     - pfl_200_security
     - ifl_600_wifi
     - pfl_300_lounge
+    
+  TOUCHPOINTS:
+    - pun_100_punctuality 
+    - bkg_200_journey_preparation
+    - pfl_100_checkin
+    - pfl_200_security
+    - pfl_300_lounge
+    - pfl_500_boarding
+    - ifl_300_cabin
+    - ifl_200_flight_crew_annoucements
+    - ifl_600_wifi
+    - ifl_500_ife
+    - ifl_400_food_drink
+    - ifl_100_cabin_crew
+    - arr_100_arrivals
+    - con_100_connections
+    - loy_200_loyalty_programme
+    - img_310_ease_contact_phone
 
     
   HEADERS_TARGETS:
@@ -187,6 +203,29 @@ VARIABLES_SIMULATE:
     - detractor_binary
     - monthly_weight
     - cluster
+    - pun_100_punctuality_nps 
+    - bkg_200_journey_preparation_nps
+    - pfl_100_checkin_nps
+    - pfl_200_security_nps
+    - pfl_300_lounge_nps
+    - pfl_500_boarding_nps
+    - ifl_300_cabin_nps
+    - ifl_200_flight_crew_annoucements_nps
+    - ifl_600_wifi_nps
+    - ifl_500_ife_nps
+    - ifl_400_food_drink_nps
+    - ifl_100_cabin_crew_nps
+    - arr_100_arrivals_nps
+    - con_100_connections_nps
+    - loy_200_loyalty_programme_nps
+    - img_310_ease_contact_phone_nps
+    - base_prob_nps
+    - out_prob_prom
+    - out_prob_det
+    - out_prob_nps
+    - uncertainty_nps
+    - simulation_client_type
+    - insert_date_ci
     
 VARIABLES_PREDICT_EXPLAIN:
   MODEL_NAME: 
@@ -261,7 +300,6 @@ VARIABLES_PREDICT_EXPLAIN:
     - out_prob_det
     - out_prob_nps
     - uncertainty_nps
-    - cluster
     - simulation_client_type
     - insert_date_ci
     

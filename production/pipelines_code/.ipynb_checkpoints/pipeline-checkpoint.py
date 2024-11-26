@@ -247,7 +247,7 @@ def get_pipeline(
     simulate_step = ProcessingStep(
         name="simulate_step",  # Name of the step
         # depends_on=["clusterize_step"],  # This step depends on the clusterize step
-        # depends_on=["predict_explain_ori_step"],
+        depends_on=["predict_explain_ori_step"],
         processor=framework_processor,  # Processor to use for the simulation
         inputs=simulate_step_args.inputs,  # Inputs for the simulation
         outputs=simulate_step_args.outputs,  # Outputs for the simulation
@@ -322,11 +322,11 @@ def get_pipeline(
     # Define the condition step to choose between aggregated steps or client steps
     condition_step = ConditionStep(
         name="UseAggregatedCondition",  # Name of the condition step
-        # depends_on = ["etl_step"],
+        depends_on = ["etl_step"],
         conditions=[condition],  # Condition to evaluate
         if_steps=[agg_preprocess_step, agg_predict_explain_step],  # Steps to execute if "use_type" is "Aggregated"
-        # else_steps=[clusterize_step, predict_explain_ori_step, simulate_step]  # Steps to execute if "use_type" is "Client"
-        else_steps=[simulate_step] 
+        else_steps=[clusterize_step, predict_explain_ori_step, simulate_step]  # Steps to execute if "use_type" is "Client"
+        # else_steps=[simulate_step] 
     )
 
     # PIPELINE - Define the overall pipeline structure
@@ -349,8 +349,8 @@ def get_pipeline(
             param_df_targets,  # Dataframe targets
             param_use_type,  # Use type to determine pipeline flow
         ],
-        # steps=[etl_step, condition_step],  # First the ETL step, followed by the condition step which contains the branches
-        steps=[condition_step],
+        steps=[etl_step, condition_step],  # First the ETL step, followed by the condition step which contains the branches
+        # steps=[condition_step],
         sagemaker_session=sagemaker_session,  # Sagemaker session object
     )
     return pipeline
