@@ -573,7 +573,9 @@ def causal_swapping(
     auto_focus_feat=True, 
     cycle_limit=5, 
     target_len=None, 
-    n=1
+    n=1,
+    df_replacement=None,
+    graph_convergence=False,
 ):
     """
     Adjusts the customer population by swapping clients between clusters until targets are met or no further improvement.
@@ -627,10 +629,10 @@ def causal_swapping(
         'Upper Bound': [targets[f'{tp}_satisfaction'].values[0] + threshold for tp in touchpoints],
     }, index=touchpoints).T
     
-    # display(round(initial_conditions_df, 3))
+    display(round(initial_conditions_df, 3))
     
     target_intervals = initial_conditions_df.loc[['Lower Bound', 'Upper Bound']].to_dict('list')
-    target_values = targets[[f'{tp}_satisfaction' for tp in touchpoints]].values.flatten()
+    target_values = initial_conditions_df.loc['Target'].values.flatten()
     current_satisfactions = np.array([calculate_satisfaction(df_current, tp) for tp in touchpoints])
     
     ##################################################################################################################################################################################
@@ -667,9 +669,7 @@ def causal_swapping(
 
     current_distance = initial_distance  
     while cycle_counter < cycle_limit:
-        
-        # start_time = time.time()
-        
+                
         adjustments_made = False
         mean_difference = np.mean(current_satisfactions - target_values)
         sum_difference = np.sum(np.abs(current_satisfactions - target_values))
@@ -711,10 +711,11 @@ def causal_swapping(
         else:
             if mean_difference < 0:
                 ## if the mean difference is negative, increase satisfaction (swap a client from level 0 to level 2)
-                adjustments_made, df_test = simple_swap_client(df_test, from_cluster=0, to_cluster=2, touchpoints=touchpoints, n=n)
+                adjustments_made, df_test = simple_swap_client(df_test, remove_from_cluster=0, duplicate_from_cluster=2, touchpoints=touchpoints, n=n, df_replacement=df_replacement)
+                
             elif mean_difference > 0:
                 ## if the mean difference is positive, decrease satisfaction (swap a client from level 2 to level 0)
-                adjustments_made, df_test = simple_swap_client(df_test, from_cluster=2, to_cluster=0, touchpoints=touchpoints, n=n)
+                adjustments_made, df_test = simple_swap_client(df_test, remove_from_cluster=2, duplicate_from_cluster=0, touchpoints=touchpoints, n=n, df_replacement=df_replacement)
         
         ## if an adjustment was made, recalculate the distance
         if adjustments_made:
@@ -776,10 +777,6 @@ def causal_swapping(
         else:    
             iteration += 1
         
-        # end_time = time.time()  # End the timer for the iteration
-        # iteration_time = end_time - start_time  # Calculate the time taken
-        # print(f"Time: {iteration_time:.4f} seconds")  # Print the iteration time
-
     ##################################################################################################################################################################################
     ## OUTPUT
     ##################################################################################################################################################################################
@@ -802,44 +799,33 @@ def causal_swapping(
         'Original number of nulls': df_original.isnull().sum()[touchpoints],
         'Final number of nulls': best_df.isnull().sum()[touchpoints],
     }, index=touchpoints).T  
-#     display(round(final_conditions_df, 3))
+    display(round(final_conditions_df, 3))
     
-#     ## plot the convergence curve in the best cycle
-#     distance_graph(best_distance_history)
+    ## plot the convergence curve in the best cycle
+    if graph_convergence:
+        distance_graph(best_distance_history)
     
     return best_df
 
-def simple_swap_client(df_adjusted, from_cluster, to_cluster, touchpoints, k=None, n=1):
-    """
-    Función auxiliar para intercambiar clientes entre clusters según criterios específicos.
-    Args:
-        df_adjusted (pd.DataFrame): DataFrame ajustado.
-        from_cluster (int): Cluster desde el que se eliminarán clientes.
-        to_cluster (int): Cluster al que se agregarán clientes.
-        touchpoints (list): Lista de touchpoints a considerar.
-        k (int): Número de variables principales a considerar para filtrar.
-        increase (bool): Indica si se debe aumentar o disminuir la satisfacción.
-    Returns:
-        bool: True si el intercambio fue exitoso, False en caso contrario.
-    """
-    clients_from = df_adjusted[df_adjusted['cluster'] == from_cluster]
-    clients_to = df_adjusted[df_adjusted['cluster'] == to_cluster]
+def simple_swap_client(df_adjusted, remove_from_cluster, duplicate_from_cluster, touchpoints, n=1, df_replacement=None):
     
-    ## select k most important clusters
-    if k:
-        important_touchpoints = touchpoints[:k]
+    clients_to_remove = df_adjusted[df_adjusted['cluster'] == remove_from_cluster]
+    
+    if df_replacement is not None:
+        clients_to_duplicate = df_replacement[df_replacement['cluster'] == duplicate_from_cluster]
     else:
-        important_touchpoints = touchpoints
-        
-    if not clients_from.empty and not clients_to.empty:
+        clients_to_duplicate = df_adjusted[df_adjusted['cluster'] == duplicate_from_cluster]
+    
+    if not clients_to_remove.empty and not clients_to_duplicate.empty:
             
-        ## select a client from the 'clients_from' dataframe to be removed
-        client_to_remove = clients_from.sample(n=n)
+        ## select a client from the 'clients_to_remove' dataframe to be removed
+        client_to_remove = clients_to_remove.sample(n=n)
         df_adjusted.drop(client_to_remove.index, inplace=True)
 
-        ## select a client from the 'clients_to' dataframe to be duplicated
-        client_to_add = clients_to.sample(n=n)
-        df_adjusted = pd.concat([df_adjusted, client_to_add], ignore_index=True)
+        ## select a client from the 'clients_to_duplicate' dataframe to be duplicated
+        client_to_duplicate = clients_to_duplicate.sample(n=n)
+        df_adjusted = pd.concat([df_adjusted, client_to_duplicate], ignore_index=True)
+        
         return True, df_adjusted
     return False, df_adjusted
 
@@ -946,7 +932,7 @@ def reshape_dataframe(df, target_len, eval_function, iterations=1000, random_sta
         if score < best_score:
             best_score, best_df = score, modified_df
     
-    return best_df, best_score
+    return best_df, best_score
 
 def get_names_from_pipeline(preprocessor):
     """
@@ -986,33 +972,6 @@ def get_names_from_pipeline(preprocessor):
     # Return the list of output column names
     return output_columns
 
-
-def read_data(prefix) -> DataFrame:
-    """This function automatically reads a dataframe processed
-    with all features in S3 and return this dataframe with
-    cid as index
-
-    Parameters
-    ----------
-
-    Returns
-    -------
-    Pandas dataframe containing all features
-    """
-
-    s3_keys = [item.key for item in s3_resource.Bucket(S3_BUCKET).objects.filter(Prefix=prefix) if item.key.endswith(".csv")]
-    preprocess_paths = [f"s3://{S3_BUCKET}/{key}" for key in s3_keys]
-    SAGEMAKER_LOGGER.info(f"preprocess_paths: {preprocess_paths}")
-    df_features = pd.DataFrame()
-    for file in preprocess_paths:
-        df = pd.read_csv(file, error_bad_lines=False)
-        df_features = pd.concat([df_features, df], axis=0)
-    SAGEMAKER_LOGGER.info(f"Data size: {str(len(df_features))}")
-    SAGEMAKER_LOGGER.info(f"Columns: {df_features.columns}")
-    df_features.index = df_features[config['VARIABLES_ETL']['ID']]
-    df_features.index.name = config['VARIABLES_ETL']['ID']
-
-    return df_features
 
 def read_csv_from_s3(bucket_name, object_key):
     # Create a boto3 S3 client
@@ -1059,7 +1018,7 @@ if __name__ == "__main__":
 
     # Execute clusterize
     columns_to_save = config.get("VARIABLES_SIMULATE").get('COLUMNS_TO_SAVE')
-    touchpoints = config.get("VARIABLES_SIMULATE").get('ORDERED_TOUCHPOINTS')
+    touchpoints = config.get("VARIABLES_SIMULATE").get('TOUCHPOINTS')
     headers = config.get("VARIABLES_SIMULATE").get('HEADERS_TARGETS')
     
     # If the DataFrame was passed as a CSV string
@@ -1072,6 +1031,7 @@ if __name__ == "__main__":
     
     # path
     src_path_characterized = f"s3://{S3_BUCKET}/{S3_PATH_WRITE}/015_predict_explain_ori_step/{year}{month}{day}/predictions.csv"
+    src_path_replacement = f"s3://{S3_BUCKET}/{S3_PATH_WRITE}/015_predict_explain_ori_step/{year}{month}{day}/sampled_predictions.csv"
     out_path = f"s3://{S3_BUCKET}/{S3_PATH_WRITE}/02_simulate_step/{year}{month}{day}"
     
 
@@ -1082,6 +1042,7 @@ if __name__ == "__main__":
 
     # Llenar los valores faltantes utilizando la función Calculate_satisfaction
     for variable in missing_targets:
+            SAGEMAKER_LOGGER.info("userlog: missing targets activated")
             # Calcular la satisfacción usando la función
             satisfaction_value = calculate_satisfaction(df, variable)            
             # Si el valor calculado es NaN, rellenar con -1 en ambos DataFrames
@@ -1094,16 +1055,35 @@ if __name__ == "__main__":
     
         
     # Assume 'df' is your original DataFrame
-    df_original = df.copy()
-    
-    swaped_df = causal_swapping(df, targets, touchpoints, threshold=0.5, distance_threshold=1)
+    # df_original = df.copy()
+    ## reshape
+    if len(df) < 100:
+        target_len = 100
+    else: 
+        target_len = None
+    ## replacement
+    if len(df) < 2000:
+        df_replacement = pd.read_csv(src_path_replacement)
+    else:
+        df_replacement = None
+
+    swapped_df = causal_swapping(
+        df, 
+        targets=targets, 
+        touchpoints=touchpoints, 
+        threshold=0.25, ## fijalo tu
+        distance_threshold=0.5, ## fijalo tu
+        target_len=target_len,
+        df_replacement=df_replacement, 
+        cycle_limit=5, 
+    )
     
     # Añadir la columna 'simulation_client_type' a cada DataFrame
     swaped_df['simulation_client_type'] = 'swaped_simulated'
     # Rename columns, add insert date and select columns to save
     swaped_df['insert_date_ci'] = STR_EXECUTION_DATE
     # swaped_df['model_version']=f'{model_year}-{model_month}-{model_day}'
-    swaped_df = swaped_df[config['VARIABLES_PREDICT_EXPLAIN']['COLUMNS_SAVE']]
+    swaped_df = swaped_df[columns_to_save]
     swaped_df.to_csv(f"{out_path}/swaped_simulated.csv", index=False)
 
     # Apply the causal soft and hard simulations

@@ -308,8 +308,8 @@ if __name__ == "__main__":
     SAGEMAKER_LOGGER.info(f"Models: {STR_MODEL}")
     SAGEMAKER_LOGGER.info(f"Cabins: {STR_CABIN}")
     SAGEMAKER_LOGGER.info(f"Hauls: {STR_HAUL}")
-
-   # Crear la lista de matrículas asociadas a los modelos deseados
+    
+    # Crear la lista de matrículas asociadas a los modelos deseados
     if "All" in STR_MODEL:
         condition_model = True  # Ignoramos el filtro de modelo si contiene "All"
         registration_list = []  # No se necesita la lista de matrículas
@@ -320,29 +320,39 @@ if __name__ == "__main__":
 
     # Log de información
     SAGEMAKER_LOGGER.info(f"Filtered registration list: {registration_list}")
-
-    # Condiciones de filtrado de fechas
-    condition_start = (df_historic['date_flight_local'] >= STR_START_DATE)
-    condition_end = (df_historic['date_flight_local'] <= STR_END_DATE)
     
-    # Filtrar cabinas; si STR_CABIN es "All", omitimos el filtro, de lo contrario usamos isin() para listas
-    condition_cabin = True if "All" in STR_CABIN else df_historic['cabin_in_surveyed_flight'].isin(STR_CABIN)
+    def apply_filter(df, column, values):
+        """
+        Aplica un filtro al DataFrame según los valores especificados.
+        Si 'values' contiene "All", no aplica ningún filtro.
 
-    # Filtrar haul; si STR_HAUL es "All", omitimos el filtro, de lo contrario usamos isin() para listas
-    condition_haul = True if "All" in STR_HAUL else df_historic['haul'].isin(STR_HAUL)
+        Args:
+            df (pd.DataFrame): DataFrame a filtrar.
+            column (str): Columna sobre la cual aplicar el filtro.
+            values (list): Lista de valores a filtrar o "All".
 
-    # Log de información
-    SAGEMAKER_LOGGER.info("userlog: ETL 5.0.1 finished pre-Merge dataframes.")
+        Returns:
+            pd.DataFrame: DataFrame filtrado (o sin filtrar si values contiene "All").
+        """
+        if "All" in values:
+            return df  # No filtrar si contiene "All"
+        return df[df[column].isin(values)]
 
-    # Filtrar el DataFrame utilizando todas las condiciones
-    df_filtered = df_historic[condition_start & condition_end & condition_cabin & condition_haul & condition_model]
+    # Aplicar filtros opcionales
+    df_filtered = apply_filter(df_historic, 'aircraft_registration_code_actual_x', STR_MODEL)
+    df_filtered = apply_filter(df_filtered, 'cabin_in_surveyed_flight', STR_CABIN)
+    df_filtered = apply_filter(df_filtered, 'haul', STR_HAUL)
+
+    # Aplicar filtros obligatorios
+    df_filtered = df_filtered[
+        (df_filtered['date_flight_local'] >= STR_START_DATE) &
+        (df_filtered['date_flight_local'] <= STR_END_DATE)
+    ]
     
-    n = len(df_filtered)
+    df_sampled = apply_filter(df_historic, 'cabin_in_surveyed_flight', STR_CABIN)
+    df_sampled = apply_filter(df_sampled, 'haul', STR_HAUL)
     
-    df_historic['date_flight_local'] = pd.to_datetime(df_historic['date_flight_local'])    
-    # condition_month = (df_historic['date_flight_local'].dt.month == start_month)
-    
-    df_sampled = df_historic[condition_cabin & condition_haul].sample(n=n)
+    df_sampled = df_sampled.sample(n=2000)
 
     # 7. Filter out final columns for the model
     SAGEMAKER_LOGGER.info("userlog: ETL 7.0 Filter out final columns for the model")
